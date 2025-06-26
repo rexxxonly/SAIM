@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render এ API Deploy করার গাইড</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Nirmala UI', 'Kalpurush', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            line-height: 1.7;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .guide-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            color: #ff8a00;
+            font-size: 2rem;
+        }
+        
+        .section-title i {
+            font-size: 2.2rem;
+        }
+        
+        .steps {
+            counter-reset: step-counter;
+            margin-left: 20px;
+        }
+        
+        .step {
+            margin-bottom: 25px;
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .step:before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: #e52e71;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .step-title {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #22c1c3;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 15px 0;
+            border-left: 4px solid #ff8a00;
+        }
+        
+        .important-note {
+            background: rgba(255, 138, 0, 0.2);
+            border-left: 4px solid #ff8a00;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #ff8a00, #e52e71);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn i {
+            margin-right: 10px;
+        }
+        
+        .screenshot {
+            width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .file-structure {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+        
+        .file-item {
+            padding: 5px 0;
+            padding-left: 20px;
+        }
+        
+        .file-item:before {
+            content: "📄 ";
+        }
+        
+        .folder:before {
+            content: "📁 ";
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 1.6rem;
+            }
+            
+            .step {
+                padding-left: 50px;
+            }
+            
+            .step:before {
+                width: 35px;
+                height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐐 Render এ Goat Bot এর API Deploy করার গাইড</h1>
+            <p class="subtitle">আপনার Goat Bot এর জন্য 4K ইমেজ এনহ্যান্সমেন্ট API তৈরি ও ডেপ্লয় করার সম্পূর্ণ বাংলা টিউটোরিয়াল</p>
+        </header>
+        
+        <div class="guide-section">
+            <div class="section-title">
+                <i class="fas fa-list-check"></i>
+                <h2>প্রস্তুতিমূলক ধাপসমূহ</h2>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-title">Render অ্যাকাউন্ট তৈরি করুন</div>
+                    <p>প্রথমে Render.com এ যান এবং একটি ফ্রি অ্যাকাউন্ট তৈরি করুন। GitHub অ্যাকাউন্ট ব্যবহার করে লগইন করা সবচেয়ে সহজ।</p>
+                    <a href="https://render.com/" target="_blank" class="btn">
+                        <i class="fas fa-external-link-alt"></i> Render.com এ যান
+                    </a>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">Node.js ইনস্টল করুন</div>
+                    <p>আপনার কম্পিউটারে Node.js (v14 বা এর উপরের ভার্সন) ইনস্টল করুন।</p>
+                    <div class="code-block">
+# Node.js চেক করার কমান্ড
+node -v
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">প্রোজেক্ট ফোল্ডার তৈরি করুন</div>
+                    <p>একটি নতুন ফোল্ডার তৈরি করুন এবং সেখানে আপনার API কোড রাখুন:</p>
+                    <div class="code-block">
+mkdir goat-bot-api
+cd goat-bot-api
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="guide-section">
+            <div class="section-title">
+                <i class="fas fa-file-code"></i>
+                <h2>API কোড তৈরি করুন</h2>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-title">package.json ফাইল তৈরি করুন</div>
+                    <p>নিচের কমান্ড রান করে package.json ফাইল তৈরি করুন:</p>
+                    <div class="code-block">
+npm init -y
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">প্রয়োজনীয় প্যাকেজ ইনস্টল করুন</div>
+                    <p>নিচের কমান্ড দিয়ে প্রয়োজনীয় প্যাকেজগুলো ইনস্টল করুন:</p>
+                    <div class="code-block">
+npm install express axios body-parser sharp
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">index.js ফাইল তৈরি করুন</div>
+                    <p>নিচের কোডটি index.js ফাইলে পেস্ট করুন:</p>
+                    <div class="code-block">
+const express = require('express');
+const axios = require('axios');
+const bodyParser = require('body-parser');
+const sharp = require('sharp');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(bodyParser.json());
+
+// ইমেজ এনহ্যান্সমেন্ট API
+app.post('/enhance', async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        
+        if (!imageUrl) {
+            return res.status(400).json({ error: 'Image URL is required' });
+        }
+        
+        // ইমেজ ডাউনলোড করুন
+        const imageResponse = await axios.get(imageUrl, { 
+            responseType: 'arraybuffer' 
+        });
+        
+        // ইমেজ প্রসেসিং (4K এনহ্যান্সমেন্ট)
+        const enhancedImage = await sharp(imageResponse.data)
+            .resize(3840, 2160, { fit: 'inside', withoutEnlargement: false })
+            .sharpen()
+            .toBuffer();
+        
+        // রেসপন্স পাঠান
+        res.set('Content-Type', 'image/jpeg');
+        res.send(enhancedImage);
+        
+    } catch (error) {
+        console.error('Error processing image:', error);
+        res.status(500).json({ error: 'Image processing failed' });
+    }
+});
+
+// হেলথ চেক এন্ডপয়েন্ট
+app.get('/', (req, res) => {
+    res.send('🐐 Goat Bot Image Enhancement API is running!');
+});
+
+// সার্ভার শুরু করুন
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="guide-section">
+            <div class="section-title">
+                <i class="fas fa-cogs"></i>
+                <h2>লোকালিতে টেস্ট করুন</h2>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-title">সার্ভার শুরু করুন</div>
+                    <p>নিচের কমান্ড দিয়ে আপনার API সার্ভার শুরু করুন:</p>
+                    <div class="code-block">
+node index.js
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">API টেস্ট করুন</div>
+                    <p>Postman বা curl ব্যবহার করে API টেস্ট করুন:</p>
+                    <div class="code-block">
+// POST রিকোয়েস্ট উদাহরণ
+{
+    "imageUrl": "https://example.com/your-image.jpg"
+}
+                    </div>
+                    <p>curl কমান্ড:</p>
+                    <div class="code-block">
+curl -X POST -H "Content-Type: application/json" \
+-d '{"imageUrl":"https://example.com/your-image.jpg"}' \
+http://localhost:3000/enhance -o enhanced-image.jpg
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="guide-section">
+            <div class="section-title">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h2>Render এ ডেপ্লয় করুন</h2>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-title">GitHub রিপোজিটরি তৈরি করুন</div>
+                    <p>আপনার কোড GitHub এ পুশ করুন:</p>
+                    <div class="code-block">
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/your-username/goat-bot-api.git
+git push -u origin main
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">Render ড্যাশবোর্ডে যান</div>
+                    <p>Render ড্যাশবোর্ডে "New +" বাটনে ক্লিক করুন এবং "Web Service" সিলেক্ট করুন</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">GitHub রিপোজিটরি কানেক্ট করুন</div>
+                    <p>আপনার goat-bot-api রিপোজিটরি সিলেক্ট করুন</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">ডেপ্লয়মেন্ট সেটিংস</div>
+                    <p>নিচের সেটিংস দিয়ে কনফিগার করুন:</p>
+                    <div class="code-block">
+Name: goat-bot-api
+Region: Singapore (or closest to you)
+Branch: main
+Runtime: Node
+Build Command: npm install
+Start Command: node index.js
+                    </div>
+                    <div class="important-note">
+                        <p><strong>গুরুত্বপূর্ণ:</strong> "Auto-Deploy" অপশন চালু রাখুন যাতে GitHub এ পরিবর্তন করলে তা স্বয়ংক্রিয়ভাবে ডেপ্লয় হয়</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">ডেপ্লয় শুরু করুন</div>
+                    <p>"Create Web Service" বাটনে ক্লিক করুন। ডেপ্লয়মেন্ট প্রক্রিয়া শুরু হবে (৫-১০ মিনিট লাগতে পারে)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="guide-section">
+            <div class="section-title">
+                <i class="fas fa-plug"></i>
+                <h2>Goat Bot এ API কানেক্ট করুন</h2>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-title">API এন্ডপয়েন্ট সংগ্রহ করুন</div>
+                    <p>ডেপ্লয় সম্পন্ন হলে Render আপনার API এর জন্য একটি URL প্রদান করবে। সাধারণত এটি দেখতে এমন:</p>
+                    <div class="code-block">
+https://goat-bot-api.onrender.com
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">Goat Bot কোডে API যোগ করুন</div>
+                    <p>আপনার Goat Bot কোডে নিচের মতো করে API কল করুন:</p>
+                    <div class="code-block">
+// ইমেজ এনহ্যান্সমেন্ট ফাংশন
+async function enhanceImage(imageUrl) {
+    try {
+        const response = await axios.post(
+            'https://goat-bot-api.onrender.com/enhance',
+            { imageUrl }
+        );
+        
+        // এনহ্যান্সড ইমেজ বাফার ফেরত দিন
+        return response.data;
+        
+    } catch (error) {
+        console.error('Enhancement API error:', error);
+        throw new Error('Image enhancement failed');
+    }
+}
+
+// বটে ব্যবহারের উদাহরণ
+bot.command('enhance', async (ctx) => {
+    const photo = ctx.message.photo[0];
+    const imageUrl = await ctx.telegram.getFileLink(photo.file_id);
+    
+    try {
+        // লোডিং মেসেজ পাঠান
+        const message = await ctx.reply('🔄 ইমেজ এনহ্যান্স করা হচ্ছে...');
+        
+        // API কল করুন
+        const enhancedImage = await enhanceImage(imageUrl.href);
+        
+        // এনহ্যান্সড ইমেজ ব্যবহারকারীকে পাঠান
+        await ctx.replyWithPhoto({ source: enhancedImage });
+        
+        // লোডিং মেসেজ ডিলিট করুন
+        await ctx.deleteMessage(message.message_id);
+        
+    } catch (error) {
+        await ctx.reply('❌ ইমেজ এনহ্যান্স করতে সমস্যা হয়েছে: ' + error.message);
+    }
+});
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="guide-section">
+            <div class="section-title">
+                <i class="fas fa-lightbulb"></i>
+                <h2>গুরুত্বপূর্ণ টিপস</h2>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-title">ফ্রি টিয়ার সীমাবদ্ধতা</div>
+                    <p>Render ফ্রি টিয়ারে:</p>
+                    <ul style="margin-left: 30px; margin-bottom: 15px;">
+                        <li>৫১২ MB RAM</li>
+                        <li>০.১ vCPU</li>
+                        <li>প্রতিদিন ৭৫০ ঘন্টা রানটাইম</li>
+                    </ul>
+                    <p>বড় ইমেজ প্রসেসিং এর জন্য পেইড প্ল্যান নেওয়া ভালো</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">ক্যাশিং ব্যবস্থা</div>
+                    <p>পারফরম্যান্স বাড়ানোর জন্য এনহ্যান্সড ইমেজ ক্যাশে করুন:</p>
+                    <div class="code-block">
+// Redis ক্যাশিং উদাহরণ
+const redis = require('redis');
+const client = redis.createClient();
+
+app.post('/enhance', async (req, res) => {
+    const { imageUrl } = req.body;
+    
+    // ক্যাশে চেক করুন
+    const cachedImage = await client.get(imageUrl);
+    if (cachedImage) {
+        return res.send(Buffer.from(cachedImage, 'base64'));
+    }
+    
+    // ...এনহ্যান্সমেন্ট প্রসেস...
+    
+    // রেসপন্স পাঠান এবং ক্যাশে করুন
+    const base64Image = enhancedImage.toString('base64');
+    client.setex(imageUrl, 3600, base64Image); // 1 ঘন্টা ক্যাশে
+    res.send(enhancedImage);
+});
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">API সুরক্ষা</div>
+                    <p>আপনার API অযাচিত ব্যবহার থেকে রক্ষা করুন:</p>
+                    <div class="code-block">
+// API কি ভেরিফিকেশন
+app.post('/enhance', (req, res) => {
+    const apiKey = req.headers['x-api-key'];
+    if (apiKey !== process.env.API_KEY) {
+        return res.status(401).json({ error: 'Invalid API key' });
+    }
+    // ...বাকি কোড...
+});
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Goat Bot API Deployment Guide | Render.com এ API ডেপ্লয় করার সম্পূর্ণ বাংলা গাইড</p>
+            <p>সফলভাবে ডেপ্লয় করতে সমস্যা হলে: contact@example.com</p>
+        </footer>
+    </div>
+</body>
+</html>
